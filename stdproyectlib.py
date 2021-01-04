@@ -1,4 +1,5 @@
-from math import *
+from math import cos, sin
+import pyglet as pg
 
 def opsum(l):
     k = l[0]
@@ -224,3 +225,48 @@ class body:
     def set_dnr_dtn(self, n, val):
         self.dnr_dtn[n] = val
 
+def PRend(v,c):
+    """
+    Calcula la posicion de un punto en el cuadro a partir de un objeto camara y el factor FOV
+    """
+    return vector( c.FOV*((v - c.r)*c.i)/((v - c.r)*c.k) , c.FOV*((v - c.r)*c.j)/((v - c.r)*c.k) )
+
+def render(obj,c):
+    """
+    Dibuja el objeto 3d en el lugar adecuado tras calcular su aspecto una vez realizada la proyeccion conica
+    """
+    obj.__render__(c)
+
+def rendbool(v,c):
+    """
+    Le dice al programa si el vector se debe calcular en pantalla o no. 
+    Util para evitar que objetos detras de la camara o lejanos se muestren.
+    """
+    return (
+        v*c.k>0 and
+        True # Incluir otros filtros
+    )
+
+class obj3D(body):
+    """
+    Un objeto en el espacio 3D
+    """
+    def __init__(self, batch, width, height, ptos, ln, r0, *args):
+        super().__init__(r0, *args)
+        self.ptos = ptos
+        self.ln = [ [pg.shapes.Line(0,0,0,0, batch = batch), i] for i in ln]
+        self.width = width
+        self.height = height
+    
+    def __render__(self, c):
+        """
+        Se calcula el aspecto una vez realizada la proyeccion conica del objeto
+        Para dibujarlo, solo tienes que usar la batch que has usado como parametro antes
+        """
+        ptos2D = [(PRend(p,c) if rendbool(p,c) else None) for p in self.ptos]
+        for l,i in self.ln:
+                l.x  = self.width + ptos2D[i[0]].x
+                l.y  = self.height + ptos2D[i[0]].y
+                l.x2 = self.width + ptos2D[i[1]].x
+                l.y2 = self.height + ptos2D[i[1]].y
+                l.visible = ptos2D[i[0]]!=None and  ptos2D[i[1]]!=None
