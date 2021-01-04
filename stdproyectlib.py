@@ -27,7 +27,10 @@ class vector:
         return str(self.x)+"*(i)" + " + " + str(self.y)+"*(j)" + " + " + str(self.z)+"*(k)"
 
     def __eq__(self,other):
-        return (self.x==other.x and self.y==other.y and self.z==other.z)
+        if type(self)!=type(other):
+            return False
+        else:
+            return (self.x==other.x and self.y==other.y and self.z==other.z)
 
     def __add__(self, other):
         return vector(self.x+other.x,self.y+other.y,self.z+other.z)
@@ -185,11 +188,11 @@ class camera:
         j = +j_vector
         k = +k_vector
         k = cos(k_j)*k + sin(k_j)*j     # Posicion de los vectores en espacio 3D:
-        j = i@k                         # 
+        j = k@i                         # 
         k = cos(k_i)*k + sin(k_i)*i     #    j k
-        i = k@j                         #    |/
+        i = j@k                         #    |/
         j = cos(j_i)*j + sin(j_i)*i     #    ·-i
-        k = j@i                         # 
+        i = j@k                         # 
         self.i = i
         self.j = j
         self.k = k
@@ -199,11 +202,14 @@ class camera:
         Especifica una serie de angulos para rotar la camara
         """
         self.k = cos(k_j)*self.k + sin(k_j)*self.j     # Posicion de los vectores en espacio 3D:
-        self.j = self.i@self.k                         # 
+        self.j = self.k@self.i                         # 
         self.k = cos(k_i)*self.k + sin(k_i)*self.i     #    j k
-        self.i = self.k@self.j                         #    |/
+        self.i = self.j@self.k                         #    |/
         self.j = cos(j_i)*self.j + sin(j_i)*self.i     #    ·-i
-        self.k = self.j@self.i                         # 
+        self.i = self.j@self.k                         #
+        self.k /= abs(self.k)
+        self.i /= abs(self.i)
+        self.j /= abs(self.j)
         
 
 class body:
@@ -229,7 +235,7 @@ def PRend(v,c):
     """
     Calcula la posicion de un punto en el cuadro a partir de un objeto camara y el factor FOV
     """
-    return vector( c.FOV*((v - c.r)*c.i)/((v - c.r)*c.k) , c.FOV*((v - c.r)*c.j)/((v - c.r)*c.k) )
+    return c.FOV*vector( ((v - c.r)*c.i)/((v - c.r)*c.k) , ((v - c.r)*c.j)/((v - c.r)*c.k) )
 
 def render(obj,c):
     """
@@ -242,10 +248,7 @@ def rendbool(v,c):
     Le dice al programa si el vector se debe calcular en pantalla o no. 
     Util para evitar que objetos detras de la camara o lejanos se muestren.
     """
-    return (
-        v*c.k>0 and
-        True # Incluir otros filtros
-    )
+    return (v - c.r)*c.k>0 # Incluir otros filtros
 
 class obj3D(body):
     """
@@ -253,20 +256,29 @@ class obj3D(body):
     """
     def __init__(self, batch, width, height, ptos, ln, r0, *args):
         super().__init__(r0, *args)
-        self.ptos = ptos
+        if istype(ptos,vector):
+            self.ptos = ptos
+        else:
+            raise TypeError("Expected vector list as ptos")
         self.ln = [ [pg.shapes.Line(0,0,0,0, batch = batch), i] for i in ln]
-        self.width = width
-        self.height = height
+        self.__w = width/2
+        self.__h = height/2
     
     def __render__(self, c):
         """
         Se calcula el aspecto una vez realizada la proyeccion conica del objeto
         Para dibujarlo, solo tienes que usar la batch que has usado como parametro antes
         """
-        ptos2D = [(PRend(p,c) if rendbool(p,c) else None) for p in self.ptos]
+        ptos2D = []
+        for p in self.ptos:
+            if rendbool(self.dnr_dtn[0]+p,c):
+                ptos2D += [PRend(p+self.dnr_dtn[0],c)]
+            else:
+                ptos2D += [None]
         for l,i in self.ln:
-                l.x  = self.width + ptos2D[i[0]].x
-                l.y  = self.height + ptos2D[i[0]].y
-                l.x2 = self.width + ptos2D[i[1]].x
-                l.y2 = self.height + ptos2D[i[1]].y
-                l.visible = ptos2D[i[0]]!=None and  ptos2D[i[1]]!=None
+            if ptos2D[i[0]]!=None and  ptos2D[i[1]]!=None:
+                l.x  = self.__w + ptos2D[i[0]].x
+                l.y  = self.__h + ptos2D[i[0]].y
+                l.x2 = self.__w + ptos2D[i[1]].x
+                l.y2 = self.__h + ptos2D[i[1]].y
+            l.visible = ptos2D[i[0]]!=None and  ptos2D[i[1]]!=None
