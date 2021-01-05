@@ -28,8 +28,9 @@ ln = [
     [5,7],
     [6,7],
 ]
+cube_grid = [obj3D(batch,win.width,win.height,ptos,ln,vector(n*5,m*5,0)) for n in range(10) for m in range(10)]
 cube = obj3D(batch,win.width,win.height,ptos,ln,vector(0,0,10))
-cubeRot = obj3D(batch,win.width,win.height,ptos,ln,vector(3,0,10))
+cubeRot = obj3D(batch,win.width,win.height,ptos,ln,vector(1.5,1.5,10))
 cube0 = obj3D(batch,win.width,win.height,ptos,ln,vector(0,0,-10))
 cube1 = obj3D(batch,win.width,win.height,ptos,ln,vector(50,50,-25))
 cube2 = obj3D(batch,win.width,win.height,ptos,ln,vector(40,0,-10))
@@ -55,6 +56,8 @@ pg.clock.schedule_interval(update,1/60)
 @win.event
 def on_draw():
     win.clear()
+    for cubeiter in cube_grid:
+        render(cubeiter,cam)
     render(cube,cam)
     render(cubeRot,cam)
     render(cube0,cam)
@@ -66,30 +69,30 @@ def on_draw():
 def on_key_press(symbol,modifiers):
     global Vk_j,Vk_i,Vj_i, Vi,Vj,Vk
     if symbol==pg.window.key.J:
-        Vk_i = -1
+        Vk_i = -2
     if symbol==pg.window.key.K:
-        Vk_j = -1
+        Vk_j = -2
     if symbol==pg.window.key.L:
-        Vk_i =  1
+        Vk_i =  2
     if symbol==pg.window.key.U:
         Vj_i = -1
     if symbol==pg.window.key.I:
-        Vk_j =  1
+        Vk_j =  2
     if symbol==pg.window.key.O:
         Vj_i =  1
 
     if symbol==pg.window.key.A:
-        Vi = -5
+        Vi = -10
     if symbol==pg.window.key.S:
-        Vk = -5
+        Vk = -10
     if symbol==pg.window.key.D:
-        Vi =  5
+        Vi =  10
     if symbol==pg.window.key.R:
-        Vj =  5
+        Vj =  10
     if symbol==pg.window.key.W:
-        Vk =  5
+        Vk =  10
     if symbol==pg.window.key.F:
-        Vj = -5
+        Vj = -10
 
 @win.event
 def on_key_release(symbol,modifiers):
