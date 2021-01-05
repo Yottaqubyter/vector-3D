@@ -29,6 +29,7 @@ ln = [
     [6,7],
 ]
 cube = obj3D(batch,win.width,win.height,ptos,ln,vector(0,0,10))
+cubeRot = obj3D(batch,win.width,win.height,ptos,ln,vector(3,0,10))
 cube0 = obj3D(batch,win.width,win.height,ptos,ln,vector(0,0,-10))
 cube1 = obj3D(batch,win.width,win.height,ptos,ln,vector(50,50,-25))
 cube2 = obj3D(batch,win.width,win.height,ptos,ln,vector(40,0,-10))
@@ -37,11 +38,15 @@ cam.abs_rot(-pi/2,0,0)
 count=0
 Vk_j,Vk_i,Vj_i = 0,0,0
 Vi,Vj,Vk = 0,0,0
+t=0
 def update(dt):
-    global count
+    global count,k_vector,t
+    t+=dt
     if count<2:
         count+=1
         return None
+    cubeRot.dnr_dtn[0].x -= 3*sin(t)*dt
+    cubeRot.dnr_dtn[0].y += 3*cos(t)*dt
     cam.rel_rot(Vk_j*dt,Vk_i*dt,Vj_i*dt)
     cam.r += (Vi*cam.i + Vj*cam.j + Vk*cam.k)*dt
 pg.clock.schedule_interval(update,1/60)
@@ -51,6 +56,7 @@ pg.clock.schedule_interval(update,1/60)
 def on_draw():
     win.clear()
     render(cube,cam)
+    render(cubeRot,cam)
     render(cube0,cam)
     render(cube1,cam)
     render(cube2,cam)
@@ -113,5 +119,4 @@ def on_key_release(symbol,modifiers):
         Vk = 0
     if symbol==pg.window.key.F:
         Vj = 0
-
 pg.app.run()
