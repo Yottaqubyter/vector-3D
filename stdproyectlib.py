@@ -22,7 +22,7 @@ class vector:
         self.z = z
 
     def __repr__(self):
-        return "vector("+self.x+","+self.y+")"
+        return "vector("+str(self.x)+","+str(self.y)+","+str(self.z)+")"
 
     def __str__(self):
         return str(self.x)+"*(i)" + " + " + str(self.y)+"*(j)" + " + " + str(self.z)+"*(k)"
