@@ -267,7 +267,7 @@ def rendbool(v,c):
     Le dice al programa si el vector se debe calcular en pantalla o no. 
     Util para evitar que objetos detras de la camara o lejanos se muestren.
     """
-    return (v - c.r)*c.rot.k>0.01 # Incluir otros filtros
+    return (v - c.r)*c.rot.k>0.05 # Incluir otros filtros
 
 
 class obj3D(body):
