@@ -13,6 +13,7 @@ def istype(l, tp):
             return False
     return True
 
+
 class vector:
 
     def __init__(self,x,y,z=0):
@@ -166,18 +167,15 @@ i_vector = vector(1,0,0)
 j_vector = vector(0,1,0)
 k_vector = vector(0,0,1)
 
-class camera:
-    """Camera object. Consists of 4 vectors, indicating position and orientation in 3d spcace"""
-
-    def __init__(self, r0, i=i_vector, j=j_vector, k=k_vector,FOV=1):
+class UTransform: 
+    """
+    Contiene informacion sobre los 3 vectores unitarios
+    se usa para especificar direccion
+    """
+    def __init__(self,i=i_vector,j=j_vector,k=k_vector):
         if i*j!=0 or i*k!=0 or j*k!=0:
             raise TypeError("Los vectores de orientacion, si se especifican, deben de ser perpendiculares entre sí")
-        else:
-            self.i = i
-            self.j = j
-            self.k = k
-            self.r = r0
-            self.FOV = FOV
+        self.i, self.j, self.k = i/abs(i), j/abs(j), k/abs(k)
     
     def abs_rot(self,k_j,k_i,j_i):
         """
@@ -189,13 +187,13 @@ class camera:
         k = +k_vector
         k = cos(k_j)*k + sin(k_j)*j     # Posicion de los vectores en espacio 3D:
         j = k@i                         # 
-        k = cos(k_i)*k + sin(k_i)*i     #    j k
-        i = j@k                         #    |/
-        j = cos(j_i)*j + sin(j_i)*i     #    ·-i
-        i = j@k                         # 
-        self.i = i
-        self.j = j
-        self.k = k
+        k = cos(k_i)*k + sin(k_i)*i     #    j k    y z
+        i = j@k                         #    |/     |/
+        j = cos(j_i)*j + sin(j_i)*i     #   -·-i   -·-x
+        i = j@k                         #   /|     /|
+        self.i = i                      #
+        self.j = j                      #
+        self.k = k                      #
 
     def rel_rot(self,k_j,k_i,j_i):
         """
@@ -203,22 +201,35 @@ class camera:
         """
         self.k = cos(k_j)*self.k + sin(k_j)*self.j     # Posicion de los vectores en espacio 3D:
         self.j = self.k@self.i                         # 
-        self.k = cos(k_i)*self.k + sin(k_i)*self.i     #    j k
-        self.i = self.j@self.k                         #    |/
-        self.j = cos(j_i)*self.j + sin(j_i)*self.i     #    ·-i
-        self.i = self.j@self.k                         #
-        self.k /= abs(self.k)
-        self.i /= abs(self.i)
-        self.j /= abs(self.j)
-        
+        self.k = cos(k_i)*self.k + sin(k_i)*self.i     #     j k     y z
+        self.i = self.j@self.k                         #     |/      |/
+        self.j = cos(j_i)*self.j + sin(j_i)*self.i     #    -·-i    -·-x
+        self.i = self.j@self.k                         #    /|      /|
+        self.k /= abs(self.k)                          #
+        self.i /= abs(self.i)                          #
+        self.j /= abs(self.j)                          #
+
+
+class camera:
+    """Camera object. Consists of 4 vectors, indicating position and orientation in 3d spcace"""
+
+    def __init__(self, k_j, k_i, j_i, FOV=1, r=null_vector):
+        global i_vector,j_vector,k_vector
+        self.rot = UTransform(i_vector,j_vector,k_vector)
+        self.rot.abs_rot(k_j,k_i,j_i)
+        self.r = r
+        self.FOV = FOV
+
 
 class body:
     def __init__(self, r0, *args):
         if not istype((r0,)+args , vector):
             raise TypeError("Expected vector type arguments: body(vector, vector, ...)")
         self.dnr_dtn = [r0]+list(args) # [r, dr/dt, d**2r/dt**2, d**3r/dt**3]
+        self.events = {"on_update":(lambda k:None)}
 
     def update(self,dt):
+        self.events["on_update"](dt)
         for i in range(self.get_n()-1):
             self.dnr_dtn[i] += self.get_dnr_dtn(i+1)*dt
 
@@ -230,12 +241,20 @@ class body:
 
     def set_dnr_dtn(self, n, val):
         self.dnr_dtn[n] = val
+    
+    def event(self, func):
+        """
+        Se usa para definir eventos
+        """
+        self.events[func.__name__] = func
+        return func
+
 
 def PRend(v,c):
     """
     Calcula la posicion de un punto en el cuadro a partir de un objeto camara y el factor FOV
     """
-    return c.FOV*vector( ((v - c.r)*c.i)/((v - c.r)*c.k) , ((v - c.r)*c.j)/((v - c.r)*c.k) )
+    return c.FOV*vector( ((v - c.r)*c.rot.i)/((v - c.r)*c.rot.k) , ((v - c.r)*c.rot.j)/((v - c.r)*c.rot.k) )
 
 def render(obj,c):
     """
@@ -248,21 +267,26 @@ def rendbool(v,c):
     Le dice al programa si el vector se debe calcular en pantalla o no. 
     Util para evitar que objetos detras de la camara o lejanos se muestren.
     """
-    return (v - c.r)*c.k>0 # Incluir otros filtros
+    return (v - c.r)*c.rot.k>0.01 # Incluir otros filtros
+
 
 class obj3D(body):
     """
     Un objeto en el espacio 3D
     """
-    def __init__(self, batch, width, height, ptos, ln, r0, *args):
-        super().__init__(r0, *args)
+    def __init__(self, batch, width, height, ptos, ln, k_j, k_i, j_i, r, *args):
+        global i_vector,j_vector,k_vector
+        super().__init__(r, *args)
+        self.events["on_render"] = lambda c:None
+        self.rot = UTransform(i_vector,j_vector,k_vector)
+        self.rot.abs_rot(k_j,k_i,j_i)
         if istype(ptos,vector):
             self.ptos = ptos
         else:
             raise TypeError("Expected vector list as ptos")
         self.ln = [ [pg.shapes.Line(0,0,0,0, batch = batch), i] for i in ln]
-        self.__w = width/2
-        self.__h = height/2
+        self._w = width/2
+        self._h = height/2
     
     def __render__(self, c):
         """
@@ -270,15 +294,21 @@ class obj3D(body):
         Para dibujarlo, solo tienes que usar la batch que has usado como parametro antes
         """
         ptos2D = []
+        args = [None, c]
         for p in self.ptos:
-            if rendbool(self.dnr_dtn[0]+p,c):
-                ptos2D += [PRend(p+self.dnr_dtn[0],c)]
+            args[0] = self.dnr_dtn[0] + self.rot.i*p.x + self.rot.j*p.y + self.rot.k*p.z
+            if rendbool(*args):
+                ptos2D += [PRend(*args)]
             else:
                 ptos2D += [None]
+    
+        render_event = False
         for l,i in self.ln:
             if ptos2D[i[0]]!=None and  ptos2D[i[1]]!=None:
-                l.x  = self.__w + ptos2D[i[0]].x
-                l.y  = self.__h + ptos2D[i[0]].y
-                l.x2 = self.__w + ptos2D[i[1]].x
-                l.y2 = self.__h + ptos2D[i[1]].y
+                render_event = True
+                l.x  = self._w + ptos2D[i[0]].x
+                l.y  = self._h + ptos2D[i[0]].y
+                l.x2 = self._w + ptos2D[i[1]].x
+                l.y2 = self._h + ptos2D[i[1]].y
             l.visible = ptos2D[i[0]]!=None and  ptos2D[i[1]]!=None
+        if render_event: self.events["on_render"](c)
