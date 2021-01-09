@@ -5,14 +5,14 @@ from math import pi
 win = pg.window.Window(fullscreen=True, resizable=True, caption="vector-3D")
 batch = pg.graphics.Batch()
 ptos = [
-    vector(0,0,0),
-    vector(0,0,1),
-    vector(0,1,0),
-    vector(0,1,1),
-    vector(1,0,0),
-    vector(1,0,1),
-    vector(1,1,0),
-    vector(1,1,1),
+    vector(-1,-1,-1),
+    vector(-1,-1, 1),
+    vector(-1, 1,-1),
+    vector(-1, 1, 1),
+    vector( 1,-1,-1),
+    vector( 1,-1, 1),
+    vector( 1, 1,-1),
+    vector( 1, 1, 1),
 ]
 ln = [
     [0,1],
@@ -28,14 +28,19 @@ ln = [
     [5,7],
     [6,7],
 ]
-cube_grid = [obj3D(batch,win.width,win.height,ptos,ln,vector(n*5,m*5,0)) for n in range(10) for m in range(10)]
-cube = obj3D(batch,win.width,win.height,ptos,ln,vector(0,0,10))
-cubeRot = obj3D(batch,win.width,win.height,ptos,ln,vector(1.5,1.5,10))
-cube0 = obj3D(batch,win.width,win.height,ptos,ln,vector(0,0,-10))
-cube1 = obj3D(batch,win.width,win.height,ptos,ln,vector(50,50,-25))
-cube2 = obj3D(batch,win.width,win.height,ptos,ln,vector(40,0,-10))
-cam = camera(vector(0,45,0),FOV=1000)
-cam.abs_rot(-pi/2,0,0)
+
+
+cube_grid = [obj3D(batch,win.width,win.height,ptos,ln,m*0.1,0,0,vector(n*5,m*5,5*(100-m**2)**0.5)) for n in range(10) for m in range(10)]
+cube = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(0,0,10))
+cubeRot = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(1.5,1.5,10))
+cube0 = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(0,0,-10))
+cube1 = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(50,50,-25))
+cube2 = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(40,0,-10))
+
+cam = camera(0,0,0,r=vector(0,45,0),FOV=1000)
+cam.rot.abs_rot(-pi/2,0,0)
+
+
 count=0
 Vk_j,Vk_i,Vj_i = 0,0,0
 Vi,Vj,Vk = 0,0,0
@@ -46,10 +51,15 @@ def update(dt):
     if count<2:
         count+=1
         return None
-    cubeRot.dnr_dtn[0].x -= 3*sin(t)*dt
-    cubeRot.dnr_dtn[0].y += 3*cos(t)*dt
-    cam.rel_rot(Vk_j*dt,Vk_i*dt,Vj_i*dt)
-    cam.r += (Vi*cam.i + Vj*cam.j + Vk*cam.k)*dt
+    cubeRot.dnr_dtn[0].x = 4*cos(t)
+    cubeRot.dnr_dtn[0].y = 4*sin(t)
+    for k in range(10):
+        for i in range(4):
+            cube_grid[(10*int(t*10) + 10*i + k)%100].rot.rel_rot(0,2*pi*dt/(i+1),0)
+            cube_grid[(10*int(t*10) - 10*i + k)%100].rot.rel_rot(0,2*pi*dt/(i+1),0)
+    
+    cam.rot.rel_rot(Vk_j*dt,Vk_i*dt,Vj_i*dt)
+    cam.r += (Vi*cam.rot.i + Vj*cam.rot.j + Vk*cam.rot.k)*dt
 pg.clock.schedule_interval(update,1/60)
 
 
