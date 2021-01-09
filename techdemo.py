@@ -19,30 +19,7 @@ for obj_name in obj_data:
 win = pg.window.Window(fullscreen=True, resizable=True, caption="vector-3D")
 win.set_exclusive_mouse(True)
 batch = pg.graphics.Batch()
-ptos = [
-    vector(-1,-1,-1),
-    vector(-1,-1, 1),
-    vector(-1, 1,-1),
-    vector(-1, 1, 1),
-    vector( 1,-1,-1),
-    vector( 1,-1, 1),
-    vector( 1, 1,-1),
-    vector( 1, 1, 1),
-]
-ln = [
-    [0,1],
-    [0,2],
-    [0,4],
-    [1,5],
-    [1,3],
-    [2,3],
-    [2,6],
-    [3,7],
-    [4,5],
-    [4,6],
-    [5,7],
-    [6,7],
-]
+
 
 framerate = pg.text.Label('60',x=30,y=30,batch=batch)
 grid = obj3D(batch,win.width,win.height,obj_data["Grid"]["points"],obj_data["Grid"]["lines"],0,0,0,vector(0,40,0))
