@@ -2,6 +2,13 @@ from stdproyectlib import *
 import pyglet as pg
 from math import pi
 
+# POR HACER:
+# - Incluir codigo para extraer modelos 3D de archivos json (con `import jstyleson as json`)
+# - Incluir codigo para que haya varios menus (Imagen de fin de partida, menu principal, etc.)
+# - A lo mejor incluir objetos 3D hechos de varios obj3D (para animacion). 
+#   Tambien se puede usar una funcion especial para cada animacion que cambie la posicion relativa de los puntos
+# - Hacer un 'R E M A S T E R' del juego corto que use para mostrar las posibilidades del motor 3D obsoleto 
+
 win = pg.window.Window(fullscreen=True, resizable=True, caption="vector-3D")
 batch = pg.graphics.Batch()
 ptos = [
