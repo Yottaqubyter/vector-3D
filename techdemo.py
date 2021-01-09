@@ -129,7 +129,7 @@ def on_key_press(symbol,modifiers):
         Vk =  10
     if symbol==pg.window.key.F:
         Vj = -10
-
+''' Para el caso de que sean necesarios de nuevo
 @win.event
 def on_key_release(symbol,modifiers):
     global Vk_j,Vk_i,Vj_i, Vi,Vj,Vk
@@ -158,7 +158,7 @@ def on_key_release(symbol,modifiers):
         Vk = 0
     if symbol==pg.window.key.F:
         Vj = 0
-
+'''
 @win.event
 def on_mouse_motion(x,y,dx,dy):
     global mouse_x,mouse_y,mouse_sensibility
