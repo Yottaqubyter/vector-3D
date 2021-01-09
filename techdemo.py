@@ -1,6 +1,6 @@
 from stdproyectlib import *
 import pyglet as pg
-from math import pi
+from math import pi,ceil
 import jstyleson as json
 
 # POR HACER:
@@ -44,8 +44,9 @@ ln = [
     [6,7],
 ]
 
+framerate = pg.text.Label('60',x=30,y=30,batch=batch)
 grid = obj3D(batch,win.width,win.height,obj_data["Grid"]["points"],obj_data["Grid"]["lines"],0,0,0,vector(0,40,0))
-cube_grid = [obj3D(batch,win.width,win.height,obj_data["Piramid"]["points"],obj_data["Piramid"]["lines"],m*0.1,0,0,vector(n*5,m*5,5*(100-m**2)**0.5)) for n in range(10) for m in range(10)]
+cube_grid = [obj3D(batch,win.width,win.height,obj_data["Piramid"]["points"],obj_data["Piramid"]["lines"],m*0.1,0,0,vector(4*n,4*m,4*(100-m**2)**0.5)) for n in range(10) for m in range(10)]
 cube = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,0))
 cubeRot = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,4))
 cube0 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,-10))
@@ -66,24 +67,23 @@ mouse_sensibility = 500
 
 def update(dt):
     global count,k_vector,t,mouse_x,mouse_y
-    print(1/dt)
     t = t+dt if t<9.9 else 0
+    framerate.text = str(int(pg.clock.get_fps()))
     if count<2:
         count+=1
         return None
     cubeRot.dnr_dtn[0].x -= cubeRot.dnr_dtn[0].z*dt # -y*dt
     cubeRot.dnr_dtn[0].z += cubeRot.dnr_dtn[0].x*dt # x*dt
     for k in range(10):
-        for i in range(4):
+        for i in range(6):
             # cube_grid[(10*t + 10*i + k)%100].dnr_dtn[0] =
             # cube_grid[(10*t - 10*i + k)%100].dnr_dtn[0] =
             cube_grid[(10*int(t*10) + 10*i + k)%100].rot.rel_rot(0,2*pi*dt/(i+1),0)
             cube_grid[(10*int(t*10) - 10*i + k)%100].rot.rel_rot(0,2*pi*dt/(i+1),0)
 
     cam.rot.abs_rot(0,mouse_x,0)
-    cam.rot.rel_rot(mouse_y,0,0)
-    # cam.rot.rel_rot(Vk_j*dt,Vk_i*dt,Vj_i*dt)
     cam.r += (Vi*cam.rot.i + Vj*cam.rot.j + Vk*cam.rot.k)*dt
+    cam.rot.rel_rot(mouse_y,0,0)
 pg.clock.schedule_interval(update,1/60)
 
 
