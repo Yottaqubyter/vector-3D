@@ -1,15 +1,23 @@
 from stdproyectlib import *
 import pyglet as pg
 from math import pi
+import jstyleson as json
 
 # POR HACER:
-# - Incluir codigo para extraer modelos 3D de archivos json (con `import jstyleson as json`)
-# - Incluir codigo para que haya varios menus (Imagen de fin de partida, menu principal, etc.)
-# - A lo mejor incluir objetos 3D hechos de varios obj3D (para animacion). 
-#   Tambien se puede usar una funcion especial para cada animacion que cambie la posicion relativa de los puntos
-# - Hacer un 'R E M A S T E R' del juego corto que use para mostrar las posibilidades del motor 3D obsoleto 
+# -[X] Incluir codigo para extraer modelos 3D de archivos json (con `import jstyleson as json`)
+# -[ ] Incluir codigo para que haya varios menus (Imagen de fin de partida, menu principal, etc.)
+# -[ ] A lo mejor incluir objetos 3D hechos de varios obj3D (para animacion). 
+#      Tambien se puede usar una funcion especial para cada animacion que cambie la posicion relativa de los puntos
+# -[ ] Hacer un 'R E M A S T E R' del juego corto que use para mostrar las posibilidades del motor 3D obsoleto 
+
+obj_file = open("models.json",'r')
+obj_data = json.load(obj_file)
+obj_file.close()
+for obj_name in obj_data:
+    obj_data[obj_name]["points"] = [vector(*i) for i in obj_data[obj_name]["points"]]
 
 win = pg.window.Window(fullscreen=True, resizable=True, caption="vector-3D")
+win.set_exclusive_mouse(True)
 batch = pg.graphics.Batch()
 ptos = [
     vector(-1,-1,-1),
@@ -36,13 +44,13 @@ ln = [
     [6,7],
 ]
 
-
-cube_grid = [obj3D(batch,win.width,win.height,ptos,ln,m*0.1,0,0,vector(n*5,m*5,5*(100-m**2)**0.5)) for n in range(10) for m in range(10)]
-cube = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(0,0,10))
-cubeRot = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(1.5,1.5,10))
-cube0 = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(0,0,-10))
-cube1 = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(50,50,-25))
-cube2 = obj3D(batch,win.width,win.height,ptos,ln,0,0,0,vector(40,0,-10))
+grid = obj3D(batch,win.width,win.height,obj_data["Grid"]["points"],obj_data["Grid"]["lines"],0,0,0,vector(0,40,0))
+cube_grid = [obj3D(batch,win.width,win.height,obj_data["Piramid"]["points"],obj_data["Piramid"]["lines"],m*0.1,0,0,vector(n*5,m*5,5*(100-m**2)**0.5)) for n in range(10) for m in range(10)]
+cube = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,0))
+cubeRot = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,4))
+cube0 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,-10))
+cube1 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(50,50,-25))
+cube2 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(40,0,-10))
 
 cam = camera(0,0,0,r=vector(0,45,0),FOV=1000)
 cam.rot.abs_rot(-pi/2,0,0)
@@ -52,22 +60,32 @@ count=0
 Vk_j,Vk_i,Vj_i = 0,0,0
 Vi,Vj,Vk = 0,0,0
 t=0
+mouse_x=0
+mouse_y=0
+mouse_sensibility = 500
+
 def update(dt):
-    global count,k_vector,t
-    t+=dt
+    global count,k_vector,t,mouse_x,mouse_y
+    print(1/dt)
+    t = t+dt if t<9.9 else 0
     if count<2:
         count+=1
         return None
-    cubeRot.dnr_dtn[0].x = 4*cos(t)
-    cubeRot.dnr_dtn[0].y = 4*sin(t)
+    cubeRot.dnr_dtn[0].x -= cubeRot.dnr_dtn[0].z*dt # -y*dt
+    cubeRot.dnr_dtn[0].z += cubeRot.dnr_dtn[0].x*dt # x*dt
     for k in range(10):
         for i in range(4):
+            # cube_grid[(10*t + 10*i + k)%100].dnr_dtn[0] =
+            # cube_grid[(10*t - 10*i + k)%100].dnr_dtn[0] =
             cube_grid[(10*int(t*10) + 10*i + k)%100].rot.rel_rot(0,2*pi*dt/(i+1),0)
             cube_grid[(10*int(t*10) - 10*i + k)%100].rot.rel_rot(0,2*pi*dt/(i+1),0)
-    
-    cam.rot.rel_rot(Vk_j*dt,Vk_i*dt,Vj_i*dt)
+
+    cam.rot.abs_rot(0,mouse_x,0)
+    cam.rot.rel_rot(mouse_y,0,0)
+    # cam.rot.rel_rot(Vk_j*dt,Vk_i*dt,Vj_i*dt)
     cam.r += (Vi*cam.rot.i + Vj*cam.rot.j + Vk*cam.rot.k)*dt
 pg.clock.schedule_interval(update,1/60)
+
 
 
 @win.event
@@ -80,6 +98,7 @@ def on_draw():
     render(cube0,cam)
     render(cube1,cam)
     render(cube2,cam)
+    render(grid,cam)
     batch.draw()
 
 @win.event
@@ -139,4 +158,13 @@ def on_key_release(symbol,modifiers):
         Vk = 0
     if symbol==pg.window.key.F:
         Vj = 0
+
+@win.event
+def on_mouse_motion(x,y,dx,dy):
+    global mouse_x,mouse_y,mouse_sensibility
+    mouse_x += dx/mouse_sensibility
+    mouse_y += dy/mouse_sensibility
+    mouse_y = min(mouse_y,pi/2)
+    mouse_y = max(mouse_y,-pi/2)
+
 pg.app.run()
