@@ -22,7 +22,7 @@ batch = pg.graphics.Batch()
 
 
 framerate = pg.text.Label('60',x=30,y=30,batch=batch)
-grid = obj3D(batch,win.width,win.height,obj_data["Grid"]["points"],obj_data["Grid"]["lines"],0,0,0,vector(0,40,0))
+grid = obj3D(batch,win.width,win.height,obj_data["Grid"]["points"],obj_data["Grid"]["lines"],0,0,0,vector(0,40,0),color=(173, 255, 47))
 cube_grid = [obj3D(batch,win.width,win.height,obj_data["Piramid"]["points"],obj_data["Piramid"]["lines"],m*0.1,0,0,vector(4*n,4*m,4*(100-m**2)**0.5)) for n in range(10) for m in range(10)]
 cube = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,0))
 cubeRot = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,4))
@@ -106,10 +106,11 @@ def on_key_press(symbol,modifiers):
         Vk =  10
     if symbol==pg.window.key.F:
         Vj = -10
-''' Para el caso de que sean necesarios de nuevo
+
 @win.event
 def on_key_release(symbol,modifiers):
     global Vk_j,Vk_i,Vj_i, Vi,Vj,Vk
+    ''' Para el caso de que sean necesarios de nuevo
     if symbol==pg.window.key.J:
         Vk_i = 0
     if symbol==pg.window.key.K:
@@ -122,7 +123,7 @@ def on_key_release(symbol,modifiers):
         Vk_j = 0
     if symbol==pg.window.key.O:
         Vj_i = 0
-
+    '''
     if symbol==pg.window.key.A:
         Vi = 0
     if symbol==pg.window.key.S:
@@ -135,7 +136,7 @@ def on_key_release(symbol,modifiers):
         Vk = 0
     if symbol==pg.window.key.F:
         Vj = 0
-'''
+
 @win.event
 def on_mouse_motion(x,y,dx,dy):
     global mouse_x,mouse_y,mouse_sensibility
