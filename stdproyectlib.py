@@ -1,4 +1,5 @@
-from math import cos, sin
+from math import cos as _cos
+from math import sin as _sin
 import pyglet as pg
 
 def opsum(l):
@@ -185,11 +186,11 @@ class UTransform:
         i = +i_vector
         j = +j_vector
         k = +k_vector
-        k = cos(k_j)*k + sin(k_j)*j     # Posicion de los vectores en espacio 3D:
+        k = _cos(k_j)*k + _sin(k_j)*j     # Posicion de los vectores en espacio 3D:
         j = k@i                         # 
-        k = cos(k_i)*k + sin(k_i)*i     #    j k    y z
+        k = _cos(k_i)*k + _sin(k_i)*i     #    j k    y z
         i = j@k                         #    |/     |/
-        j = cos(j_i)*j + sin(j_i)*i     #   -·-i   -·-x
+        j = _cos(j_i)*j + _sin(j_i)*i     #   -·-i   -·-x
         i = j@k                         #   /|     /|
         self.i = i                      #
         self.j = j                      #
@@ -199,11 +200,11 @@ class UTransform:
         """
         Especifica una serie de angulos para rotar la camara
         """
-        self.k = cos(k_j)*self.k + sin(k_j)*self.j     # Posicion de los vectores en espacio 3D:
+        self.k = _cos(k_j)*self.k + _sin(k_j)*self.j     # Posicion de los vectores en espacio 3D:
         self.j = self.k@self.i                         # 
-        self.k = cos(k_i)*self.k + sin(k_i)*self.i     #     j k     y z
+        self.k = _cos(k_i)*self.k + _sin(k_i)*self.i     #     j k     y z
         self.i = self.j@self.k                         #     |/      |/
-        self.j = cos(j_i)*self.j + sin(j_i)*self.i     #    -·-i    -·-x
+        self.j = _cos(j_i)*self.j + _sin(j_i)*self.i     #    -·-i    -·-x
         self.i = self.j@self.k                         #    /|      /|
         self.k /= abs(self.k)                          #
         self.i /= abs(self.i)                          #
