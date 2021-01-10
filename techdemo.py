@@ -22,13 +22,13 @@ batch = pg.graphics.Batch()
 
 
 framerate = pg.text.Label('60',x=30,y=30,batch=batch)
-grid = obj3D(batch,win.width,win.height,obj_data["Grid"]["points"],obj_data["Grid"]["lines"],0,0,0,vector(0,40,0),color=(173, 255, 47))
-cube_grid = [obj3D(batch,win.width,win.height,obj_data["Piramid"]["points"],obj_data["Piramid"]["lines"],m*0.1,0,0,vector(4*n,4*m,4*(100-m**2)**0.5)) for n in range(10) for m in range(10)]
-cube = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,0))
-cubeRot = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,4))
-cube0 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,-10))
-cube1 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(50,50,-25))
-cube2 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(40,0,-10))
+grid = obj3D(batch,win.width,win.height,obj_data["Grid"]["points"],obj_data["Grid"]["lines"],0,0,0,vector(0,40,0),color=obj_data["Grid"]["color"])
+cube_grid = [obj3D(batch,win.width,win.height,obj_data["Piramid"]["points"],obj_data["Piramid"]["lines"],m*0.1,0,0,vector(4*n,4*m,4*(100-m**2)**0.5),color=obj_data["Piramid"]["color"]) for n in range(10) for m in range(10)]
+cube = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,0),color=obj_data["Cube"]["color"])
+cubeRot = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,4),color=obj_data["Cube"]["color"])
+cube0 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(0,0,-10),color=obj_data["Cube"]["color"])
+cube1 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(50,50,-25),color=obj_data["Cube"]["color"])
+cube2 = obj3D(batch,win.width,win.height,obj_data["Cube"]["points"],obj_data["Cube"]["lines"],0,0,0,vector(40,0,-10),color=obj_data["Cube"]["color"])
 
 cam = camera(0,0,0,r=vector(0,45,0),FOV=1000)
 cam.rot.abs_rot(-pi/2,0,0)
