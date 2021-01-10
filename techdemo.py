@@ -1,6 +1,6 @@
 from stdproyectlib import *
 import pyglet as pg
-from math import pi,ceil
+from math import pi
 import jstyleson as json
 
 # POR HACER:
