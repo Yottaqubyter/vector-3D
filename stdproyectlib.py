@@ -274,7 +274,7 @@ class obj3D(body):
     """
     Un objeto en el espacio 3D
     """
-    def __init__(self, batch, width, height, ptos, ln, k_j, k_i, j_i, r, *args):
+    def __init__(self, batch, width, height, ptos, ln, k_j, k_i, j_i, r, *args, color=(255,255,255)):
         global i_vector,j_vector,k_vector
         super().__init__(r, *args)
         self.events["on_render"] = lambda c:None
@@ -284,7 +284,7 @@ class obj3D(body):
             self.ptos = ptos
         else:
             raise TypeError("Expected vector list as ptos")
-        self.ln = [ [pg.shapes.Line(0,0,0,0, batch = batch), i] for i in ln]
+        self.ln = [ [pg.shapes.Line(0,0,0,0, batch = batch, color = color), i] for i in ln]
         self._w = width/2
         self._h = height/2
     
@@ -312,3 +312,7 @@ class obj3D(body):
                 l.y2 = self._h + ptos2D[i[1]].y
             l.visible = ptos2D[i[0]]!=None and  ptos2D[i[1]]!=None
         if render_event: self.events["on_render"](c)
+    
+    def set_color(self, color):
+        for l,_ in self.ln:
+            l.color = color
